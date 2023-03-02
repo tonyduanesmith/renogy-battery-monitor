@@ -1,7 +1,9 @@
 import noble from "@abandonware/noble";
 
 const BT_DEVICE_NAME = "BT-TH-F258CF8C";
-const INTERVAL = 1000;
+const INTERVAL = 3000;
+
+let requestType;
 
 noble.on("stateChange", (state) => {
   if (state === "poweredOn") {
@@ -59,25 +61,71 @@ const initiateScan = () => {
       const tx = characteristics.find((c) => c.uuid === "ffd1");
       // subscribe to the rx characteristic
       rx.on("data", (data) => {
-        let payload = Buffer.from(data);
-        let numCells = payload.readInt16LE(4);
-        let volts = [];
-        for (let x = 1; x <= numCells; x++) {
-          let volt = payload.readInt16LE(x * 2 + 4) / 10;
-          volts.push(volt);
-          console.log(volts.join(", "));
+        switch (requestType) {
+          case "cellVoltages":
+            getCellVoltagesResponse(data);
+            break;
+          case "levels":
+            getLevelsResponse(data);
+          default:
+            console.log("Unknown request type");
         }
-        console.log("Received data");
+        console.log("Received data...");
       });
       // enable notifications
       await rx.notifyAsync(true);
-      // write to the tx characteristic
-      setInterval(() => {
-        tx.writeAsync(
-          Buffer.from([0x30, 0x03, 0x13, 0x88, 0x00, 0x11, 0x05, 0x49]),
-          true
-        );
-      }, [INTERVAL]);
+
+      // send the request
+      while (true) {
+        await getLevelsRequest(tx);
+        await wait(INTERVAL);
+        await getCellVoltagesRequest(tx);
+        await wait(INTERVAL);
+      }
     }
   });
 };
+
+export const getCellVoltagesRequest = async (tx) => {
+  await tx.writeAsync(
+    Buffer.from([0x30, 0x03, 0x13, 0x88, 0x00, 0x11, 0x05, 0x49]),
+    true
+  );
+
+  requestType = "cellVoltages";
+};
+
+export const getCellVoltagesResponse = (data) => {
+  let payload = Buffer.from(data);
+  let numCells = payload.readInt16LE(4);
+  let volts = [];
+  for (let x = 1; x <= numCells; x++) {
+    let volt = payload.readInt16LE(x * 2 + 4) / 10;
+    volts.push(volt);
+  }
+  console.log(volts.join(", "));
+};
+
+export const getLevelsRequest = async (tx) => {
+  await tx.writeAsync(
+    Buffer.from([0x30, 0x03, 0x13, 0xb2, 0x00, 0x06, 0x65, 0x4a]),
+    true
+  );
+
+  requestType = "levels";
+};
+
+export const getLevelsResponse = (data) => {
+  let payload = Buffer.from(data);
+  console.log(payload);
+  let current = payload.readInt16BE(3) / 100;
+  console.log({ current });
+  let volt = payload.readUInt16LE(6) / 10;
+  console.log({ volt });
+  let chargeLevel = payload.readUInt32BE(7) / 1000;
+  console.log({ chargeLevel });
+  let capacity = payload.readUInt32BE(11) / 1000;
+  console.log({ capacity });
+};
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
