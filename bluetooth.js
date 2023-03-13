@@ -1,19 +1,22 @@
 import noble from "@abandonware/noble";
+import { BatterData } from "./mongoose.js";
 
 const BT_DEVICE_NAME = "BT-TH-F258CF8C";
 const INTERVAL = 3000;
 
 let requestType;
 
-noble.on("stateChange", (state) => {
-  if (state === "poweredOn") {
-    console.log("Bluetooth is on");
-    initiateScan();
-  } else {
-    console.log("Bluetooth is off");
-    noble.stopScanning();
-  }
-});
+export const startBluetooth = () => {
+  noble.on("stateChange", (state) => {
+    if (state === "poweredOn") {
+      console.log("Bluetooth is on");
+      initiateScan();
+    } else {
+      console.log("Bluetooth is off");
+      noble.stopScanning();
+    }
+  });
+};
 
 const initiateScan = () => {
   noble.startScanning([], true);
@@ -31,7 +34,8 @@ const initiateScan = () => {
   });
 
   noble.on("discover", async (peripheral) => {
-    if (peripheral.advertisement.localName == BT_DEVICE_NAME) {
+    if (peripheral?.advertisement?.localName?.trim() == BT_DEVICE_NAME) {
+      console.log("Found peripheral:", peripheral.advertisement.localName);
       // connect to the peripheral
       peripheral.once("connect", () => {
         console.log(
@@ -126,6 +130,25 @@ export const getLevelsResponse = (data) => {
   console.log({ chargeLevel });
   let capacity = payload.readUInt32BE(11) / 1000;
   console.log({ capacity });
+  let timestamp = new Date();
+
+  const batteryData = new BatterData({
+    batteryVoltage: volt,
+    cellVoltages: [],
+    capacity: capacity,
+    current: current,
+    chargeLevel: chargeLevel,
+    timestamp: timestamp,
+  });
+
+  batteryData
+    .save()
+    .then((savedData) => {
+      console.log("Data saved");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
