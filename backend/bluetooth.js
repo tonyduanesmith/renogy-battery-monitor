@@ -5,6 +5,7 @@ const BT_DEVICE_NAME = "BT-TH-F258CF8C";
 const INTERVAL = 3000;
 
 let requestType;
+let peripheralFound = false;
 
 export const startBluetooth = () => {
   noble.on("stateChange", (state) => {
@@ -34,7 +35,12 @@ const initiateScan = () => {
   });
 
   noble.on("discover", async (peripheral) => {
-    if (peripheral?.advertisement?.localName?.trim() == BT_DEVICE_NAME) {
+    console.log(peripheral?.advertisement?.localName);
+    if (
+      peripheral?.advertisement?.localName?.trim() == BT_DEVICE_NAME &&
+      peripheralFound === false
+    ) {
+      peripheralFound = true;
       console.log("Found peripheral:", peripheral.advertisement.localName);
       // connect to the peripheral
       peripheral.once("connect", () => {
@@ -131,6 +137,8 @@ export const getLevelsResponse = (data) => {
   let capacity = payload.readUInt32BE(11) / 1000;
   console.log({ capacity });
   let timestamp = new Date();
+
+
 
   const batteryData = new BatterData({
     batteryVoltage: volt,

@@ -5,6 +5,7 @@ import { BatterData } from "./mongoose.js";
 
 const app = express();
 const PORT = 3000;
+const IP = "localhost";
 
 export const startServer = () => {
   app.use(bodyParser.json());
@@ -17,7 +18,7 @@ export const startServer = () => {
     res.json(latestBattery);
   });
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(PORT, IP, () => {
+    console.log(`Server running on port ${IP}:${PORT}`);
   });
 };
