@@ -2,7 +2,7 @@ import noble from "@abandonware/noble";
 import { BatterData } from "./mongoose.js";
 
 const BT_DEVICE_NAME = "BT-TH-F258CF8C";
-const MAC_ADDRESS = "F0:F8:F2:58:CF:8C";
+const MAC_ADDRESS = "f0:f8:f2:58:cf:8c";
 const INTERVAL = 30000;
 
 let requestType;
@@ -34,6 +34,10 @@ const initiateScan = () => {
 
   noble.on("warning", (message) => {
     console.log("Warning:", message);
+  });
+
+  peripheral.on('error', (error) => {
+    console.log('Peripheral error:', error);
   });
 
   noble.on("discover", async (peripheral) => {
