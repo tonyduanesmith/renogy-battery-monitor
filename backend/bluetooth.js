@@ -36,10 +36,6 @@ const initiateScan = () => {
     console.log("Warning:", message);
   });
 
-  peripheral.on('error', (error) => {
-    console.log('Peripheral error:', error);
-  });
-
   noble.on("discover", async (peripheral) => {
     console.log(peripheral?.advertisement?.localName,peripheral?.address, "peripheral")
     if (
@@ -49,11 +45,12 @@ const initiateScan = () => {
       peripheralFound = true;
       console.log("Found peripheral:", peripheral.advertisement.localName);
       // connect to the peripheral
-      peripheral.once("connect", () => {
+      peripheral.once("connect", (error) => {
         console.log(
           "Connected to peripheral:",
           peripheral.advertisement.localName
         );
+        console.log("error",error)
       });
       // disconnect from the peripheral
       peripheral.once("disconnect", () => {
