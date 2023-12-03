@@ -2,10 +2,12 @@ import noble from "@abandonware/noble";
 import { BatterData } from "./mongoose.js";
 
 const BT_DEVICE_NAME = "BT-TH-F258CF8C";
+const MAC_ADDRESS = "F0:F8:F2:58:CF:8C";
 const INTERVAL = 30000;
 
 let requestType;
 let peripheralFound = false;
+
 
 export const startBluetooth = () => {
   noble.on("stateChange", (state) => {
@@ -35,10 +37,10 @@ const initiateScan = () => {
   });
 
   noble.on("discover", async (peripheral) => {
-    console.log(peripheral?.advertisement?.localName);
+    console.log(peripheral?.advertisement?.localName,peripheral?.address, "peripheral")
     if (
-      peripheral?.advertisement?.localName?.trim() == BT_DEVICE_NAME &&
-      peripheralFound === false
+    (peripheral?.advertisement?.localName?.trim() == BT_DEVICE_NAME &&
+      peripheralFound === false) || (peripheral?.address?.trim() == MAC_ADDRESS && peripheralFound === false)
     ) {
       peripheralFound = true;
       console.log("Found peripheral:", peripheral.advertisement.localName);
