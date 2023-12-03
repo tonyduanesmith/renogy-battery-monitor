@@ -1,12 +1,17 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
 import { startBluetooth } from "./bluetooth.js";
 import { startServer } from "./server.js";
 
+dotenv.config();
+
+const dbUrl = process.env.DB_URL;
+
 // Connect to database
-console.log("start connection to database...");
+console.log("start connection to database...", typeof dbUrl);
 mongoose
-  .connect("mongodb://localhost/battery", {
+  .connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

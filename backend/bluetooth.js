@@ -2,7 +2,7 @@ import noble from "@abandonware/noble";
 import { BatterData } from "./mongoose.js";
 
 const BT_DEVICE_NAME = "BT-TH-F258CF8C";
-const INTERVAL = 3000;
+const INTERVAL = 30000;
 
 let requestType;
 let peripheralFound = false;
