@@ -12,6 +12,7 @@ let peripheralFound = false;
 export const startBluetooth = () => {
   noble.on("stateChange", (state) => {
     if (state === "poweredOn") {
+      noble.reset();
       console.log("Bluetooth is on");
       initiateScan();
     } else {
@@ -61,8 +62,11 @@ const initiateScan = () => {
       });
       // stop scanning
       await noble.stopScanningAsync();
+      noble.reset();
       // connect to the peripheral
-      await peripheral.connectAsync();
+      await peripheral.connectAsync().catch((err) => {
+        console.log(err);
+      });
       // discover the services and characteristics of the peripheral
       const { characteristics } =
         await peripheral.discoverAllServicesAndCharacteristicsAsync([
