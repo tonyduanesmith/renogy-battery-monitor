@@ -51,7 +51,6 @@ const initiateScan = () => {
           "Connected to peripheral:",
           peripheral.advertisement.localName
         );
-        console.log("error",error)
       });
       // disconnect from the peripheral
       peripheral.once("disconnect", () => {
@@ -64,8 +63,8 @@ const initiateScan = () => {
       await noble.stopScanningAsync();
       noble.reset();
       // connect to the peripheral
-      await peripheral.connectAsync().catch((err) => {
-        console.log(err);
+      await peripheral.connectAsync().catch((error) => {
+        console.log(error);
       });
       // discover the services and characteristics of the peripheral
       const { characteristics } =
